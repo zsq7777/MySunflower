@@ -33,7 +33,9 @@ import com.google.samples.apps.sunflower.workers.SeedDatabaseWorker.Companion.KE
 /**
  * The Room database for this app
  */
+// entities: 与数据库关联的数据实体的  数组  version:数据库版本  exportSchema(导出模式)：是否保留版本历史记录，设置为true将架构导出给定文件夹
 @Database(entities = [GardenPlanting::class, Plant::class], version = 1, exportSchema = false)
+// 类型转换器 -数据库不认识的类型需要转换
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun gardenPlantingDao(): GardenPlantingDao
@@ -41,12 +43,16 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
 
-        // For Singleton instantiation
-        @Volatile private var instance: AppDatabase? = null
+        // For Singleton instantiation 单例实例化
+        @Volatile // 强制修改值，立即写入主存
+        private var instance: AppDatabase? = null
 
         fun getInstance(context: Context): AppDatabase {
-            return instance ?: synchronized(this) {
-                instance ?: buildDatabase(context).also { instance = it }
+            return instance ?: synchronized(this) { // synchronized 同步锁
+
+                instance ?: buildDatabase(context).also { // also 返回传入对象本身
+                    instance = it
+                }
             }
         }
 
@@ -58,9 +64,11 @@ abstract class AppDatabase : RoomDatabase() {
                     object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             super.onCreate(db)
+
+                            // 开启一次性任务
                             val request = OneTimeWorkRequestBuilder<SeedDatabaseWorker>()
-                                    .setInputData(workDataOf(KEY_FILENAME to PLANT_DATA_FILENAME))
-                                    .build()
+                                .setInputData(workDataOf(KEY_FILENAME to PLANT_DATA_FILENAME))
+                                .build()
                             WorkManager.getInstance(context).enqueue(request)
                         }
                     }

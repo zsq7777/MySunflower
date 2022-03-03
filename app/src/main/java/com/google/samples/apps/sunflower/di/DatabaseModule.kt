@@ -27,11 +27,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-@InstallIn(SingletonComponent::class)
+@InstallIn(SingletonComponent::class) // InstallIn 指定安装入口 Applcation
 @Module
 class DatabaseModule {
 
-    @Singleton
+    @Singleton // 只实例化一次 不继承
     @Provides
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
         return AppDatabase.getInstance(context)
